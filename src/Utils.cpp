@@ -1,5 +1,4 @@
 #include "Utils.hpp"
-
 #include "iostream"
 #include "fstream"
 #include "sstream"
@@ -8,124 +7,136 @@
 using namespace std;
 
 
-/*IMPORT 
-DATAS*/
-bool ImportDatas(const string& inputFilePath,   // reference al nome dell'input file in main
-                   unsigned int& n,   // reference a n in main
-                   double*& w,   // reference al puntatore w in main
-                   double*& r,   // refference al puntatore r in main
-                   unsigned int& S )   // reference a S in main
+/*
+// Funzione : ImportDatas
+// Inputs :
+const string& inputFilePath : il percorso del file dei dati
+unsigned int& n : numero di investimenti
+double*& w : reference ad un puntatore di double : percentuali di investimento della somma iniziale
+double*& r : reference ad un puntatore di double : percentuali di ritorno
+unsigned int& S : somma iniziale investita
+*/
+bool ImportDatas(const string& inputFilePath,   
+                   unsigned int& n,   
+                   double*& w,  
+                   double*& r,   
+                   unsigned int& S )   
 {
-    // Open File
-
+    // Apertura del file di input
     ifstream file;
     file.open(inputFilePath);
 
     if (file.fail())
     {
-        cerr<< "file open failed"<< endl;
-        return false;   // false, così nel main diventa true ed entra nel ciclo if
+        cerr<< "ERRORE di apertura del file."<< endl;
+        return false;   
     }
 
+    /// LETTURA E MEMORIZZAZIONE DEI DATI
 
-    // Prendo il valore iniziale della somma S
-
+    // Somma iniziale S
     string line;
-    string ignora_S;
+    string ignora;
 
     getline(file, line);   // leggo S;1000
-    istringstream lineStream_S(line);   // Trasformo line in uno stream per scomporlo in pezzi
-    getline(lineStream_S, ignora_S, ';');   // Salvo in "ignora" la S del data che a me non interessa
+    istringstream lineStream_S(line); 
+    getline(lineStream_S, ignora, ';');   // Salvo in "ignora_S" la S del data che a me non interessa
 
-    lineStream_S >> S;   // converto 1000 in int (automatico per l'overload di >>) e lo salvo in S
+    lineStream_S >> S;   // S = 1000
     
 
-    // Prendo il valore della dimensione n
-    string ignora_n;
+    // Numero di assets n
     getline(file, line);   // leggo n;8
-    istringstream lineStream_n(line);   // Trasformo line in uno stream per scomporlo in pezzi
-    getline(lineStream_n, ignora_n, ';');   // Salvo in "ignora" la n del data
+    istringstream lineStream_n(line);  
+    getline(lineStream_n, ignora, ';');   // ignoro 'n'
 
     lineStream_n >> n;
     
 
-    // Leggo e ignoro la riga "w;r"
+    // Ignoro la riga "w;r"
     getline(file, line);
 
-    // Alloco nella memoria gli array di dimensione n
-
+    // Alloco nella memoria w e r, dato che ora ho la dimensione n
     w = new double[n];
     r = new double[n];
-    unsigned int i = 0;
 
-    while (getline(file, line))   // fin tanto che non è la fine del file, eseguo il ciclo while
+    unsigned int i = 0;   // per iterazione w,r
+    while (getline(file, line))   //finchè c'è una riga da leggere
     {
-        char separator;   // per ignorare il punto e virgola
-        istringstream lineStream_wr(line);   // Stream per scomporre i pezzi
+        char separator;   
+        istringstream lineStream_wr(line);   
 
         lineStream_wr >> w[i];
-        lineStream_wr >> separator;
+        lineStream_wr >> separator;   //ignoro il ';'
         lineStream_wr >> r[i];
 
-        i++ ;  //incremento per l'iterazione
+        i++ ;  //iterazione w,r
 
     }
 
-    // Close File
-    file.close();
+    file.close();   //fine file -> chiudo
 
-    return true;   // True, così nel main non entrare nella sezione di errorImportDatas
+    return true;
 }
 
+/************************************************/
 
-
-/*COMPUTE
-TOTAL VALUE*/
-double ComputeTotVal(const int& n,
+/*
+// Funzione : Calcola_valFinale
+// Inputs : n,S,w,r come prima
+// Outputs : v : valore finale dopo le rate
+*/
+double Calcola_valFinale(const int& n,
     const int& S,
     const double* const& w,
     const double* const& r)
 {
 double V = 0;
-for (unsigned int i = 0; i < n; i++)
-V += w[i] * S * (1 + r[i]);
+for (int i = 0; i < n; i++) {
+    V += w[i] * S * (1 + r[i]);
+    }
 
 return V;
 }
 
+/************************************************/
 
+/*
+//Funzione: Calcola_rateTotale
+// Inputs : S,V
+// Outputs :  (V-S)/S : rendimento
+*/
+double Calcola_rateTotale(const int& S, const double& V) { return (V - S) / S;}
 
-/*COMPUTE 
-TOTAL RATE*/
-double ComputeTotRate(const int& S,
-    const double& V)
-{
-double R = (V - S) / S;
+/************************************************/
 
-return R;
-}
-
-
-
-
-/*ARRAY 
-TO STRING*/
+/*
+// Funzione : ArrayToString : trasforma un array in una stringa
+// Inputs : n, v (in cui v sono w e r)
+// Outputs : v sottofroma di stringa
+*/
 string ArrayToString(const int& n,
     const double* const& v)
 {
 string str;
 ostringstream toString;
 toString << "[ ";
-for (unsigned int i = 0; i < n; i++)
+for (int i = 0; i < n; i++)
 toString<< v[i]<< " ";
 toString << "]";
 
 return toString.str();
 }
 
+/************************************************/
 
-/*EXPORT
-RESULTS ON FILE*/
+/*
+// Funzione : ExportResult : esporta i risultati richiesti su un file
+// Inputs : 
+const string& outputFile : file di output su cui scrivere
+dati n,w,r,V,R,S
+// Output : dati scrittu sull'outputFile
+*/
 bool ExportResult(const string& outputFile,
     const int& n,
     const double* const& w,
@@ -135,36 +146,36 @@ bool ExportResult(const string& outputFile,
     const int& S)
 {
 
-// Open File
+// Apro file di scrittura
 ofstream file;
 file.open(outputFile);
 
 if (file.fail())
 {
-cerr<< "L'apertura del outputFile non è andata a buon fine!"<< endl;
+cerr<< "ERRORE nell'apertura del file di output."<< endl;
 return false;
 }
 
-file << fixed << setprecision(2);   // doppia precisione per S
+file << setprecision(2);   
 
-file << "S = "<< S << "; " << "" << noshowpoint << "n = " << n << endl;   // noshowpoint fa sì che sono S abbia i numeri decimali ed n no
+file << "S = "<< S << "; " << "" << noshowpoint << "n = " << n << endl;   // noshowpoint toglie lo zero decimale 
 
 file << "w = [ ";
-for (unsigned int i = 0; i < n; i++)
+for (int i = 0; i < n; i++)
 file << w[i] << " ";
 file << " ]" << endl;
 
 file << "r = [ ";
-for (unsigned int i = 0; i < n; i++)
+for (int i = 0; i < n; i++)
 file << r[i]<< " ";
 file << " ]" << endl;
 
 
-file << "Rate of return of the portfolio: "<< R << endl;
+file << "Rate of return of the portfolio: "<< fixed << setprecision(4) << R << endl;
 file << fixed << setprecision(2) << "V: " << V << endl;
 
-// Close File
-file.close();
+
+file.close();   // chiudo outputFile
 
 return true;
 }

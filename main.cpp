@@ -26,10 +26,10 @@ int main()
         cout << "r = " << ArrayToString(n , r) << endl;
     }
 
-    double V = ComputeTotVal(n, S, w, r);
-    double R = ComputeTotRate(S, V);
+    double V = Calcola_valFinale(n, S, w, r);
+    double R = Calcola_rateTotale(S, V);
 
-    cout << "Rate of return of the portfolio: " << R << endl;
+    cout << "Rate of return of the portfolio: " << fixed << setprecision(4) << R << endl;
     cout << fixed << setprecision(2) << "V: " << V << endl;
     
 
@@ -42,7 +42,7 @@ int main()
     else
         cout<< "Esportazione terminata con successo."<< endl;
 
-    delete[] w;
+    delete[] w;   //libera la memoria non necessaria
     delete[] r;
 
     return 0;
